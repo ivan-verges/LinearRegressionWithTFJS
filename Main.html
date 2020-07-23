@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<!--script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.1/dist/tf.min.js"></script-->
+		<script type="text/javascript" src="Scripts/tf.min.js"></script>
+	</head>
+	<body>
+		<label>Write a Number to Predict:</label>
+		</br>
+		<input type="number" id="input">
+		<button onclick="readAndPredict()">Click to Predict Value!</button>
+		</br>
+		</br>
+		<div id="predictedResult"></div>
+		</br>
+		<div id="expectedResult"></div>
+		</br>
+		<div id="calculatedError"></div>
+	</body>
+	<script>
+		//Model to Train and Make Predictions
+		var model = null;
+		
+		//Creates and Trains a Linear Model with {trainData} as Training Data, and Iterates it {epochsToTrain} Times
+		async function trainLinearModel(trainData, epochsToTrain = 500)
+		{
+			//Builds a Sequential Model
+			model = tf.sequential();
+			
+			//Adds a Dense Layer to the Sequential Model with {units} Neurons
+			model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+			
+			//Compiles the Model with Mean Squared Error as the Loss Function, and Stochastic Gradient Descent as the Optimizer Function
+			model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
+			
+			//Defines the Training Data (xData = Input, yData = Output)
+			const xData = tf.tensor2d(trainData[0], [trainData[0].length, 1]);
+			const yData = tf.tensor2d(trainData[1], [trainData[1].length, 1]);
+			
+			//Trains the Model Iterating on Training Data {epochsToTrain} Times
+			await model.fit(xData, yData, {epochs: epochsToTrain});
+		}
+		
+		//Makes Predictions for {valueToPredict} from {model}
+		function makePrediction(valueToPredict)
+		{
+			//Parse Value to Predict to Float
+			valueToPredict = parseFloat(valueToPredict);
+			
+			//Get the Prediction from the Model for {valueToPredict}
+			const res = model.predict(tf.tensor2d([valueToPredict], [1, 1]));
+			
+			//Gets the Promise Returned by the Prediction from Model and Set the Result on the "result" Element on Body
+			res.array().then(function(result)
+			{
+				//Gets the Predicted Value
+				const prediction = result[0];
+				
+				//Calculates the Expected Value
+				const calculated = (valueToPredict * 2) - 5;
+				
+				//Calculates the Mean Squared Error Between Prediction and Calculation
+				const error = Math.pow((Math.abs(prediction) - Math.abs(calculated)), 2)
+				
+				//Set's the Values to Page Elements
+				document.getElementById('predictedResult').innerText = "Predicted Value: " + prediction.toString();
+				document.getElementById('expectedResult').innerText = "Expected Value: " + calculated.toString();
+				document.getElementById('calculatedError').innerText = "Mean Squared Error: " + error.toString();
+			});
+		}
+		
+		//Generates Train Data to Create a Linear Model with {dataPoints} Values
+		function generateTrainData(dataPoints = 100)
+		{
+			//Defines 2 Arrays for Train Data ({xData} = Inputs, {yData} = Outputs)
+			var xData = [];
+			var yData = [];
+			
+			//Splits {dataPoints} by Half to Generate Values from Negative to Positive
+			const half = Math.max(dataPoints, -dataPoints) / 2;
+			for(i = -half; i < half; i++)
+			{
+				xData.push(i);
+				yData.push((i * 2) - 5);
+			}
+			
+			return [xData, yData];
+		}
+		
+		//Reads Input from Web to Make Prediction
+		function readAndPredict()
+		{
+			//Reads the Input Value
+			const inputValue = document.getElementById("input").value;
+			
+			//If {model} is Null, Creates a Linear Model by Calling the trainLinearModel Function to Create and Train a Model
+			if(model == null)
+			{
+				//Gets the Training Data to Train On
+				const trainData = generateTrainData(10);
+				
+				//Creates and Train a Linear Model
+				trainLinearModel(trainData, 500);
+			}
+			
+			//Makes a Prediction for {inputValue}
+			makePrediction(inputValue);
+		}
+	</script>
+</html>
