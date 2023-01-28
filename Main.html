@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<!--script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.1/dist/tf.min.js"></script-->
+		<!--script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script-->
 		<script type="text/javascript" src="Scripts/tf.min.js"></script>
 	</head>
 	<body>
@@ -89,7 +89,7 @@
 		//Calculates the Output Value for an Input
 		function calculateOutput(inputValue)
 		{
-			return (inputValue * 2) - 5;
+			return (inputValue * 5) - 5;
 		}
 		
 		//Reads Input from Web to Make Prediction
@@ -103,6 +103,10 @@
 			{
 				//Gets the Training Data to Train On
 				const trainData = generateTrainData(10);
+
+				//Prints the Training Data
+				console.log("Training Data:");
+				console.log(trainData);
 				
 				//Creates and Train a Linear Model
 				trainLinearModel(trainData, 500);
